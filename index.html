@@ -1,373 +1,156 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PAM / 日常異常の気づき</title>
-  <style>
-    :root{
-      --bg:#f4f7fb; --card:#ffffff; --text:#1f2937; --muted:#6b7280;
-      --line:#dbe3ee; --primary:#2563eb; --danger:#dc2626; --warn:#d97706; --ok:#16a34a;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:980px;margin:0 auto;padding:18px}
-    .hero{background:linear-gradient(135deg,#eaf2ff,#ffffff);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}
-    h1{font-size:28px;margin:0 0 6px}
-    .sub{color:var(--muted);line-height:1.7}
-    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-    @media (max-width: 860px){.grid{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,.04)}
-    h2{font-size:20px;margin:0 0 12px}
-    h3{font-size:16px;margin:16px 0 8px}
-    .muted{color:var(--muted)}
-    .typeRow{display:flex;flex-wrap:wrap;gap:10px}
-    .typeBtn{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font-weight:700}
-    .typeBtn.active{border-color:var(--primary);background:#eef4ff;color:var(--primary)}
-    .checklist{display:grid;gap:8px;margin-top:10px}
-    label.chk{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
-    label.chk input{margin-top:2px;transform:scale(1.15)}
-    .judge{margin-top:14px;padding:14px;border-radius:14px;border:1px solid var(--line);background:#fafcff}
-    .judge.high{border-color:#fecaca;background:#fef2f2}
-    .judge.mid{border-color:#fde68a;background:#fffbeb}
-    .judge.low{border-color:#bbf7d0;background:#f0fdf4}
-    .level{font-weight:800;font-size:20px;margin-bottom:6px}
-    .high .level{color:var(--danger)} .mid .level{color:var(--warn)} .low .level{color:var(--ok)}
-    .actions{display:grid;gap:8px;margin-top:10px}
-    .act{padding:11px 12px;border-radius:12px;border:none;cursor:pointer;font-weight:700}
-    .primary{background:var(--primary);color:#fff}
-    .danger{background:var(--danger);color:#fff}
-    .ghost{background:#eef2f7;color:#111827}
-    textarea,input[type="text"]{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit}
-    textarea{min-height:120px;resize:vertical}
-    .small{font-size:13px;color:var(--muted)}
-    .recordList{display:grid;gap:10px;margin-top:10px}
-    .item{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
-    .itemHead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
-    .tag{display:inline-block;font-size:12px;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-weight:700}
-    .dangerTag{background:#fee2e2;color:#991b1b}
-    .warnTag{background:#fef3c7;color:#92400e}
-    .okTag{background:#dcfce7;color:#166534}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .half{flex:1 1 240px}
-    .footerNote{margin-top:10px;font-size:12px;color:var(--muted)}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAM｜一人で判断させない仕組み</title>
+
+<style>
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI",sans-serif;
+  background:#f5f7fb;
+  color:#222;
+  line-height:1.7;
+}
+.section{
+  max-width:800px;
+  margin:0 auto;
+  padding:40px 20px;
+}
+h1{font-size:32px;margin-bottom:10px;}
+h2{font-size:26px;margin-bottom:10px;}
+p{margin-bottom:16px;}
+
+.hero{
+  text-align:center;
+  padding:60px 20px;
+  background:#fff;
+}
+.btn{
+  display:inline-block;
+  padding:16px 24px;
+  border-radius:10px;
+  background:#2563eb;
+  color:#fff;
+  text-decoration:none;
+  font-weight:bold;
+  margin:10px;
+}
+
+.card{
+  background:#fff;
+  padding:25px;
+  border-radius:15px;
+  margin-top:20px;
+}
+
+.highlight{
+  font-weight:bold;
+  color:#2563eb;
+}
+
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <h1>PAM / 日常異常の気づき</h1>
-      <div class="sub">
-        詐欺電話・詐欺メール・偽サイトを、<b>怪しいと思った時だけ</b>すぐ確認するための最小構成です。<br>
-        ①入口選択 → ②危険判定 → ③今やること → ④記録・家族共有 を一つにまとめています。
-      </div>
-    </div>
 
-    <div class="grid">
-      <div class="card">
-        <h2>① まず種類を選ぶ</h2>
-        <div class="muted">迷ったら近いものを選べば大丈夫です。</div>
-        <div class="typeRow" id="typeRow">
-          <button class="typeBtn" data-type="sms">SMS・メール</button>
-          <button class="typeBtn" data-type="phone">電話</button>
-          <button class="typeBtn" data-type="web">Web・リンク</button>
-        </div>
+<!-- ① ファーストビュー -->
+<section class="hero">
+  <h1>一人で判断させない仕組みを。</h1>
+  <p>詐欺・認知の不安から家族を守る「PAM」</p>
 
-        <h3>② 危険チェック</h3>
-        <div class="muted">当てはまるものにチェックを入れてください。種類を選ぶと判定が表示されます。</div>
-        <div id="checkArea" class="checklist"></div>
+  <a href="#pam" class="btn">今すぐ試す</a>
+  <a href="#project" class="btn">プロジェクトを見る</a>
+</section>
 
-        <div id="judgeBox" class="judge">
-          <div class="level">まず左上の種類を選んでください</div>
-          <div id="judgeText" class="muted">選択後、危険度とやることが表示されます。</div>
-        </div>
+<!-- ② ストーリー -->
+<section class="section">
+  <h2>ある日、一本の電話で人生が変わる</h2>
+  <p>
+  突然の電話。警察を名乗る声。  
+  「あなたの口座が危険です」
+  </p>
+  <p>
+  不安の中で、誰にも相談できず判断してしまう。  
+  そして気づいたときには、すべてが終わっている。
+  </p>
+</section>
 
-        <h3>③ 今やること</h3>
-        <div id="actionArea" class="actions">
-          <button class="act ghost" disabled>種類を選ぶと、やることが表示されます</button>
-        </div>
-      </div>
+<!-- ③ 問題 -->
+<section class="section">
+  <h2>問題は判断力ではありません</h2>
+  <p>
+  本当の問題は  
+  <span class="highlight">「一人で判断してしまう構造」</span>にあります。
+  </p>
+</section>
 
-      <div class="card">
-        <h2>④ 記録・家族共有</h2>
-        <div class="muted">家族や支援者と共有できるよう、気づきを残します。</div>
+<!-- ④ 解決 -->
+<section class="section">
+  <h2>PAMは判断しないための仕組みです</h2>
 
-        <div class="row" style="margin-top:12px">
-          <div class="half">
-            <label class="small">件名</label>
-            <input type="text" id="titleInput" placeholder="例：変なSMSが来た / 警察を名乗る電話" />
-          </div>
-          <div class="half">
-            <label class="small">相手・送信元</label>
-            <input type="text" id="fromInput" placeholder="例：090-xxxx / ○○銀行を名乗る / URL" />
-          </div>
-        </div>
-
-        <div style="margin-top:10px">
-          <label class="small">気づきメモ</label>
-          <textarea id="memoInput" placeholder="何が怪しかったか、何を言われたか、押していないか、振込していないか など"></textarea>
-        </div>
-
-        <div class="actions" style="margin-top:12px">
-          <button class="act primary" id="shareBtn">共有文を作る</button>
-          <button class="act ghost" id="copyBtn">共有文をコピー</button>
-          <button class="act ghost" id="saveBtn">この記録を保存</button>
-        </div>
-
-        <div style="margin-top:10px">
-          <label class="small">共有文</label>
-          <textarea id="shareOutput" placeholder="ここに家族LINEやメモ帳へ送る文が作成されます"></textarea>
-        </div>
-
-        <div class="footerNote">
-          ここで作った共有文は、家族LINEやメモ帳へコピーして使う想定です。<br>
-          この版ではブラウザ内に保存します。次の版では日付自動強化・画像添付・家族送信ボタンも追加できます。
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <h2>保存した記録</h2>
-      <div class="muted">最近の気づきを確認できます。日常の異常の蓄積が、支援の入口になります。</div>
-      <div id="recordList" class="recordList"></div>
-    </div>
+  <div class="card">
+    <p>① 種類を選ぶ</p>
+    <p>② チェックする</p>
+    <p>③ 今やることが分かる</p>
   </div>
+</section>
 
-<script>
-const rules = {
-  sms: {
-    label: 'SMS・メール',
-    items: [
-      'URLを押させようとする',
-      '支払い・未納・停止を急がせる',
-      '銀行・警察・配送業者を名乗る',
-      '個人情報や暗証番号を求める',
-      '日本語や文面が少し不自然'
-    ]
-  },
-  phone: {
-    label: '電話',
-    items: [
-      '今すぐ対応しないと危険と言う',
-      '警察・役所・銀行・家族を名乗る',
-      '送金・振込・電子マネー購入を指示する',
-      '誰にも相談しないように言う',
-      '番号が非通知・見慣れない・折返しを急がせる'
-    ]
-  },
-  web: {
-    label: 'Web・リンク',
-    items: [
-      'URLが少しおかしい・見慣れない',
-      'ログインやカード情報入力を求める',
-      '本物そっくりだが不安がある',
-      '警告表示や当選表示で急がせる',
-      '公式サイトではなくリンク経由で開いた'
-    ]
-  }
-};
+<!-- ⑤ 実際に使う -->
+<section class="section" id="pam">
+  <h2>実際に使えます</h2>
+  <p>下のボタンからすぐに体験できます。</p>
 
-let currentType = '';
+  <!-- 🔥ここにPAMのURL入れる -->
+  <a href="ここにPAMのURL" class="btn">PAMを開く</a>
+</section>
 
-const typeBtns = [...document.querySelectorAll('.typeBtn')];
-const checkArea = document.getElementById('checkArea');
-const judgeBox = document.getElementById('judgeBox');
-const judgeText = document.getElementById('judgeText');
-const actionArea = document.getElementById('actionArea');
-const titleInput = document.getElementById('titleInput');
-const fromInput = document.getElementById('fromInput');
-const memoInput = document.getElementById('memoInput');
-const shareOutput = document.getElementById('shareOutput');
-const recordList = document.getElementById('recordList');
+<!-- ⑥ なぜ無料 -->
+<section class="section">
+  <h2>なぜ無料で公開しているのか</h2>
+  <p>
+  この仕組みは、多くの人に届く必要があるからです。
+  </p>
 
-function setType(type){
-  currentType = type;
-  typeBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.type === type));
-  renderChecks();
-  evaluate();
-}
+  <h2>ではなぜ支援が必要なのか</h2>
+  <p>
+  PAMの価値はプログラムではなく  
+  <span class="highlight">「守れる状態を作ること」</span>にあります。
+  </p>
 
-function renderChecks(){
-  checkArea.innerHTML = '';
-  if(!currentType) return;
-  rules[currentType].items.forEach((text, i) => {
-    const id = `c_${currentType}_${i}`;
-    const label = document.createElement('label');
-    label.className = 'chk';
-    label.innerHTML = `<input type="checkbox" id="${id}" onchange="evaluate()"><span>${text}</span>`;
-    checkArea.appendChild(label);
-  });
-}
+  <p>
+  PAMは無料です。  
+  しかし、守れる状態は無料では作れません。
+  </p>
+</section>
 
-function evaluate(){
-  if(!currentType){
-    judgeBox.className = 'judge';
-    judgeBox.querySelector('.level').textContent = 'まず左上の種類を選んでください';
-    judgeText.textContent = '選択後、危険度とやることが表示されます。';
-    actionArea.innerHTML = '<button class="act ghost" disabled>種類を選ぶと、やることが表示されます</button>';
-    return;
-  }
-  const count = [...checkArea.querySelectorAll('input:checked')].length;
-  let level = 'low', title = '低め（ただし注意）', text = '今すぐ強い危険とは限りませんが、押す・返す・入力する前に一度止まって確認してください。';
-  if(count >= 3){
-    level = 'high'; title = '危険の可能性が高い'; text = '詐欺の典型パターンにかなり当てはまります。一人で判断せず、連絡・送金・入力を止めてください。';
-  } else if(count >= 1){
-    level = 'mid'; title = '注意が必要'; text = '怪しい要素があります。公式窓口へ自分で調べて確認し、今この画面で記録を残してください。';
-  }
-  judgeBox.className = `judge ${level}`;
-  judgeBox.querySelector('.level').textContent = title;
-  judgeText.textContent = text;
-  renderActions(level, count);
-}
+<!-- ⑦ 返礼品 -->
+<section class="section">
+  <h2>支援で得られるもの</h2>
 
-function renderActions(level, count){
-  const actions = {
-    high: [
-      ['閉じる・切る・返事しない', 'danger', () => alert('まず相手との接触を止めてください。')],
-      ['家族へ共有文を作る', 'primary', createShareText],
-      ['公式窓口を自分で調べる', 'ghost', () => alert('SMSや相手の案内からではなく、公式サイトや通帳・カード記載の番号から確認してください。')],
-      ['この記録を保存', 'ghost', saveRecord]
-    ],
-    mid: [
-      ['共有文を作る', 'primary', createShareText],
-      ['公式窓口を自分で調べる', 'ghost', () => alert('リンク先ではなく、自分で公式サイトや代表番号を調べて確認してください。')],
-      ['この記録を保存', 'ghost', saveRecord]
-    ],
-    low: [
-      ['念のため共有文を作る', 'primary', createShareText],
-      ['この記録を保存', 'ghost', saveRecord]
-    ]
-  };
-  actionArea.innerHTML = '';
-  actions[level].forEach(([label, cls, fn]) => {
-    const btn = document.createElement('button');
-    btn.className = `act ${cls}`;
-    btn.textContent = label;
-    btn.onclick = fn;
-    actionArea.appendChild(btn);
-  });
-}
+  <div class="card">
+    <p>・家族での使い方設計</p>
+    <p>・見守り設定</p>
+    <p>・共有サポート</p>
+  </div>
+</section>
 
-function currentLevel(){
-  const count = [...checkArea.querySelectorAll('input:checked')].length;
-  if(count >= 3) return '危険の可能性が高い';
-  if(count >= 1) return '注意が必要';
-  return '低め（ただし注意）';
-}
+<!-- ⑧ 未来 -->
+<section class="section">
+  <h2>「あの時相談できていれば」をなくす</h2>
+  <p>
+  一人で判断しない社会を作ります。
+  </p>
+</section>
 
-function createShareText(){
-  const now = new Date();
-  const stamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const checked = [...checkArea.querySelectorAll('input:checked')].map(i => i.parentElement.innerText.trim());
-  const lines = [
-    '【PAM共有メモ】',
-    `日時：${stamp}`,
-    `種類：${currentType ? rules[currentType].label : '未選択'}`,
-    `判定：${currentLevel()}`,
-    `件名：${titleInput.value || '（未入力）'}`,
-    `相手・送信元：${fromInput.value || '（未入力）'}`,
-    `怪しい点：${checked.length ? checked.join(' / ') : '（チェックなし）'}`,
-    `メモ：${memoInput.value || '（未入力）'}`,
-    '行動：今は返信・クリック・送金を止めて確認中'
-  ];
-  shareOutput.value = lines.join('\n');
-}
+<!-- ⑨ CTA -->
+<section class="hero" id="project">
+  <h2>この仕組みを広げたい</h2>
 
-async function copyShare(){
-  if(!shareOutput.value.trim()) createShareText();
-  try{
-    await navigator.clipboard.writeText(shareOutput.value);
-    alert('共有文をコピーしました。');
-  }catch(e){
-    shareOutput.select();
-    document.execCommand('copy');
-    alert('共有文をコピーしました。');
-  }
-}
+  <a href="ここにクラファンURL" class="btn">支援する</a>
+  <a href="#pam" class="btn">PAMを試す</a>
+</section>
 
-function saveRecord(){
-  if(!currentType){ alert('先に種類を選んでください。'); return; }
-  if(!shareOutput.value.trim()) createShareText();
-  const checked = [...checkArea.querySelectorAll('input:checked')].map(i => i.parentElement.innerText.trim());
-  const record = {
-    id: Date.now(),
-    at: new Date().toLocaleString('ja-JP'),
-    type: currentType,
-    typeLabel: rules[currentType].label,
-    level: currentLevel(),
-    title: titleInput.value || '無題',
-    from: fromInput.value || '',
-    memo: memoInput.value || '',
-    checked,
-    share: shareOutput.value || ''
-  };
-  const arr = JSON.parse(localStorage.getItem('pam_records') || '[]');
-  arr.unshift(record);
-  localStorage.setItem('pam_records', JSON.stringify(arr.slice(0, 30)));
-  renderRecords();
-  alert('記録を保存しました。');
-}
-
-function deleteRecord(id){
-  const arr = JSON.parse(localStorage.getItem('pam_records') || '[]').filter(r => r.id !== id);
-  localStorage.setItem('pam_records', JSON.stringify(arr));
-  renderRecords();
-}
-
-function loadToForm(id){
-  const arr = JSON.parse(localStorage.getItem('pam_records') || '[]');
-  const r = arr.find(x => x.id === id);
-  if(!r) return;
-  setType(r.type);
-  titleInput.value = r.title || '';
-  fromInput.value = r.from || '';
-  memoInput.value = r.memo || '';
-  [...checkArea.querySelectorAll('input')].forEach(input => {
-    const txt = input.parentElement.innerText.trim();
-    input.checked = (r.checked || []).includes(txt);
-  });
-  evaluate();
-  shareOutput.value = r.share || '';
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-
-function renderRecords(){
-  const arr = JSON.parse(localStorage.getItem('pam_records') || '[]');
-  recordList.innerHTML = '';
-  if(!arr.length){
-    recordList.innerHTML = '<div class="item muted">まだ保存された記録はありません。</div>';
-    return;
-  }
-  arr.forEach(r => {
-    const cls = r.level.includes('高') ? 'dangerTag' : r.level.includes('注意') ? 'warnTag' : 'okTag';
-    const div = document.createElement('div');
-    div.className = 'item';
-    div.innerHTML = `
-      <div class="itemHead">
-        <div><b>${escapeHtml(r.title)}</b><div class="small">${escapeHtml(r.at)} / ${escapeHtml(r.typeLabel)}</div></div>
-        <span class="tag ${cls}">${escapeHtml(r.level)}</span>
-      </div>
-      <div class="small">相手・送信元：${escapeHtml(r.from || '（未入力）')}</div>
-      <div style="margin-top:6px;line-height:1.6">${escapeHtml((r.memo || '').slice(0,120) || '（メモなし）')}</div>
-      <div class="row" style="margin-top:10px">
-        <button class="act ghost" onclick="loadToForm(${r.id})">開く</button>
-        <button class="act ghost" onclick="navigator.clipboard.writeText(${JSON.stringify(r.share || '')}).then(()=>alert('共有文をコピーしました。'))">共有文コピー</button>
-        <button class="act ghost" onclick="deleteRecord(${r.id})">削除</button>
-      </div>
-    `;
-    recordList.appendChild(div);
-  });
-}
-
-function escapeHtml(str){
-  return String(str).replace(/[&<>"]+/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m] || m));
-}
-
-document.getElementById('shareBtn').addEventListener('click', createShareText);
-document.getElementById('copyBtn').addEventListener('click', copyShare);
-document.getElementById('saveBtn').addEventListener('click', saveRecord);
-typeBtns.forEach(btn => btn.addEventListener('click', ()=> setType(btn.dataset.type)));
-renderRecords();
-</script>
 </body>
 </html>
